@@ -1,0 +1,18 @@
+[Unit]
+Description=ThermoEngine OpenAI Web Service
+After=network.target
+
+[Service]
+Type=simple
+User=danny
+WorkingDirectory=/home/danny/thermoengine-web
+EnvironmentFile=/home/danny/thermoengine-web/thermoengine.env
+ExecStartPre=/bin/bash -c 'source ${VENV_PATH}/bin/activate && pip install -q -r mcp-server/requirements.txt'
+ExecStart=/bin/bash -c 'source ${VENV_PATH}/bin/activate && /usr/bin/node backend/server-openai.js'
+Restart=always
+RestartSec=10
+StandardOutput=append:/home/danny/thermoengine-web/thermoengine-service.log
+StandardError=append:/home/danny/thermoengine-web/thermoengine-service.log
+
+[Install]
+WantedBy=multi-user.target

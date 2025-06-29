@@ -1,0 +1,15 @@
+[Unit]
+Description=ThermoEngine Web Service
+After=network.target
+
+[Service]
+Type=simple
+User=danny
+WorkingDirectory=/home/danny/thermoengine-web
+Environment="OPENAI_API_KEY=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"
+ExecStart=/usr/bin/node /home/danny/thermoengine-web/backend/server-openai.js
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

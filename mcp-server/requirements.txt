@@ -1,0 +1,3 @@
+numpy>=1.21.0
+# Uncomment when using actual ThermoEngine
+# thermoengine>=1.0.0

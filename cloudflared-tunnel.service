@@ -1,0 +1,17 @@
+[Unit]
+Description=Cloudflare Tunnel for ThermoEngine
+After=network.target thermoengine-openai.service
+Wants=thermoengine-openai.service
+
+[Service]
+Type=simple
+User=danny
+WorkingDirectory=/home/danny/thermoengine-web
+ExecStart=/usr/local/bin/cloudflared tunnel run
+Restart=always
+RestartSec=10
+StandardOutput=append:/home/danny/thermoengine-web/cloudflared-service.log
+StandardError=append:/home/danny/thermoengine-web/cloudflared-service.log
+
+[Install]
+WantedBy=multi-user.target

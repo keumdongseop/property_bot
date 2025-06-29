@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>섭봇 물성 계산기</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 2.5rem 0;
+            margin-bottom: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            opacity: 0.95;
+            font-size: 1.2rem;
+        }
+
+        .chat-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            height: 650px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 25px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .user-message {
+            text-align: right;
+        }
+
+        .user-message .message-content {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 18px;
+            border-radius: 18px 18px 4px 18px;
+            display: inline-block;
+            max-width: 70%;
+            text-align: left;
+        }
+
+        .assistant-message .message-content {
+            background-color: #f1f3f5;
+            color: #333;
+            padding: 12px 18px;
+            border-radius: 18px 18px 18px 4px;
+            display: inline-block;
+            max-width: 85%;
+        }
+
+        /* Enhanced Result Card Styling */
+        .result-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: 1px solid #dee2e6;
+            border-radius: 12px;
+            padding: 0;
+            margin-top: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+
+        .result-header {
+            background: linear-gradient(135deg, #495057 0%, #343a40 100%);
+            color: white;
+            padding: 15px 20px;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .result-body {
+            padding: 20px;
+        }
+
+        .property-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin: 15px 0;
+            display: flex;
+            align-items: baseline;
+            gap: 15px;
+        }
+
+        .unit-selector {
+            font-size: 1rem;
+            padding: 6px 12px;
+            border: 2px solid #3498db;
+            border-radius: 6px;
+            background: white;
+            color: #3498db;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .unit-selector:hover {
+            background: #3498db;
+            color: white;
+        }
+
+        .property-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .detail-item {
+            background: white;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+
+        .detail-label {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin-bottom: 4px;
+        }
+
+        .detail-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .data-sources {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #dee2e6;
+        }
+
+        .source-title {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .source-badge {
+            background: #28a745;
+            color: white;
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: normal;
+        }
+
+        .source-list {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .source-list li {
+            padding: 6px 0;
+            color: #6c757d;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .source-list li:before {
+            content: "✓";
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .phase-indicator {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .phase-gas {
+            background: #ffeaa7;
+            color: #d63031;
+        }
+
+        .phase-liquid {
+            background: #74b9ff;
+            color: #0984e3;
+        }
+
+        .phase-solid {
+            background: #a29bfe;
+            color: #6c5ce7;
+        }
+
+        /* Enhanced details styling */
+        .details-toggle {
+            background: none;
+            border: none;
+            color: #007bff;
+            cursor: pointer;
+            font-size: 0.9rem;
+            padding: 8px 0;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            transition: color 0.2s;
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+
+        .details-toggle:hover {
+            color: #0056b3;
+        }
+
+        .toggle-icon {
+            display: inline-block;
+            margin-right: 6px;
+            transition: transform 0.2s;
+            font-size: 0.8rem;
+        }
+
+        .calculation-details {
+            margin-top: 12px;
+            padding: 16px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
+
+        .detail-section {
+            margin-bottom: 12px;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .detail-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .detail-section strong {
+            color: #495057;
+            display: inline-block;
+            margin-bottom: 4px;
+        }
+
+        .detail-section.equation {
+            background-color: #fff;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #e9ecef;
+        }
+
+        .detail-section code {
+            font-family: 'Courier New', monospace;
+            color: #e83e8c;
+            font-size: 1rem;
+        }
+
+        .nist-link a {
+            display: inline-flex;
+            align-items: center;
+            color: #007bff;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 12px;
+            background-color: #e7f3ff;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .nist-link a:hover {
+            background-color: #d0e8ff;
+            color: #0056b3;
+        }
+
+        .nist-link svg {
+            margin-right: 6px;
+        }
+
+        .input-area {
+            padding: 20px;
+            background-color: #fafafa;
+            border-radius: 0 0 12px 12px;
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 10px;
+        }
+
+        #userInput {
+            flex: 1;
+            padding: 14px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            resize: none;
+            min-height: 50px;
+            max-height: 150px;
+            transition: border-color 0.3s;
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+
+        #userInput:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        #sendButton {
+            padding: 14px 28px;
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 2px 10px rgba(0,123,255,0.3);
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+
+        #sendButton:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0,123,255,0.4);
+        }
+
+        #sendButton:disabled {
+            background: linear-gradient(135deg, #ccc 0%, #999 100%);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #007bff;
+            animation: pulse 1.4s infinite;
+            margin: 0 3px;
+        }
+
+        .loading:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .loading:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes pulse {
+            0%, 60%, 100% {
+                opacity: 0.3;
+                transform: scale(0.8);
+            }
+            30% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .examples {
+            margin-top: 20px;
+            padding: 25px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        .examples h3 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+            font-size: 1.2rem;
+        }
+
+        .example-queries {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .example-btn {
+            padding: 10px 18px;
+            background-color: #e3f2fd;
+            border: 1px solid #90caf9;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            color: #1976d2;
+            font-weight: 500;
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+
+        .example-btn:hover {
+            background-color: #1976d2;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(25,118,210,0.3);
+        }
+
+        .error-message {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* Custom scrollbar */
+        .messages::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .messages::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .messages::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        .messages::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>섭봇 물성 계산기</h1>
+            <p class="subtitle">NIST 열역학 데이터 기반</p>
+        </header>
+
+        <div class="chat-container">
+            <div class="messages" id="messages">
+                <div class="message assistant-message">
+                    <div class="message-content">
+                        섭하! 물질명과 밀도, 증기압, 열용량 등을 한국어로 질문해주세요.
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-area">
+                <div class="input-wrapper">
+                    <textarea 
+                        id="userInput" 
+                        placeholder="물성에 대해 질문하세요 (예: 물의 25도에서 밀도는?)"
+                        rows="1"
+                    ></textarea>
+                    <button id="sendButton">전송</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="examples">
+            <h3>예시 질문:</h3>
+            <div class="example-queries">
+                <button class="example-btn" onclick="setExample('물의 25도에서 밀도는?')">
+                    물 25°C 밀도
+                </button>
+                <button class="example-btn" onclick="setExample('암모니아 30도 밀도')">
+                    암모니아 30°C 밀도
+                </button>
+                <button class="example-btn" onclick="setExample('에탄올의 78도 증기압 계산해줘')">
+                    에탄올 증기압
+                </button>
+                <button class="example-btn" onclick="setExample('벤젠의 상온에서 열용량은?')">
+                    벤젠 열용량
+                </button>
+                <button class="example-btn" onclick="setExample('계산 가능한 물성들 알려줘')">
+                    가능한 물성 목록
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const messagesContainer = document.getElementById('messages');
+        const userInput = document.getElementById('userInput');
+        const sendButton = document.getElementById('sendButton');
+
+        // Korean property names for display
+        const propertyNamesKorean = {
+            'density': '밀도',
+            'viscosity': '점도',
+            'heat_capacity': '열용량',
+            'vapor_pressure': '증기압',
+            'enthalpy': '엔탈피',
+            'entropy': '엔트로피',
+            'gibbs_energy': '깁스 자유 에너지',
+            'helmholtz_energy': '헬름홀츠 에너지',
+            'internal_energy': '내부 에너지',
+            'thermal_conductivity': '열전도도',
+            'surface_tension': '표면장력',
+            'critical_temperature': '임계온도',
+            'critical_pressure': '임계압력',
+            'boiling_point': '끓는점',
+            'melting_point': '녹는점',
+            'molecular_weight': '분자량',
+            'heat_vaporization': '증발열'
+        };
+
+        // Auto-resize textarea
+        userInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = this.scrollHeight + 'px';
+        });
+
+        // Handle Enter key (send) and Shift+Enter (new line)
+        userInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        sendButton.addEventListener('click', sendMessage);
+
+        async function sendMessage() {
+            const message = userInput.value.trim();
+            if (!message) return;
+
+            // Add user message to chat
+            addMessage(message, 'user');
+            
+            // Clear input and disable while processing
+            userInput.value = '';
+            userInput.style.height = 'auto';
+            sendButton.disabled = true;
+            userInput.disabled = true;
+
+            // Show loading indicator
+            const loadingId = showLoading();
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message, language: 'ko' })
+                });
+
+                const data = await response.json();
+                
+                // Remove loading indicator
+                removeLoading(loadingId);
+
+                if (response.ok) {
+                    // Check if we have structured data
+                    if (data.structuredData) {
+                        addStructuredResult(data.structuredData);
+                    } else {
+                        addMessage(data.response, 'assistant');
+                    }
+                } else {
+                    addMessage(`오류: ${data.error || '문제가 발생했습니다'}`, 'assistant', true);
+                }
+            } catch (error) {
+                removeLoading(loadingId);
+                addMessage('오류: 서버에 연결할 수 없습니다', 'assistant', true);
+            } finally {
+                sendButton.disabled = false;
+                userInput.disabled = false;
+                userInput.focus();
+            }
+        }
+
+        function addMessage(content, sender, isError = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = `message-content${isError ? ' error-message' : ''}`;
+            contentDiv.textContent = content;
+            
+            messageDiv.appendChild(contentDiv);
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function addStructuredResult(data) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message assistant-message';
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            
+            // Create result card
+            const resultCard = document.createElement('div');
+            resultCard.className = 'result-card';
+            
+            // Header
+            const header = document.createElement('div');
+            header.className = 'result-header';
+            const koreanProperty = propertyNamesKorean[data.property] || data.property;
+            header.textContent = `${data.component}의 ${koreanProperty}`;
+            resultCard.appendChild(header);
+            
+            // Body
+            const body = document.createElement('div');
+            body.className = 'result-body';
+            
+            // Property value with unit selector
+            const valueDiv = document.createElement('div');
+            valueDiv.className = 'property-value';
+            
+            const valueSpan = document.createElement('span');
+            valueSpan.id = `value-${Date.now()}`;
+            valueSpan.textContent = formatNumber(data.value);
+            valueDiv.appendChild(valueSpan);
+            
+            if (data.conversions) {
+                const select = document.createElement('select');
+                select.className = 'unit-selector';
+                select.onchange = function() {
+                    valueSpan.textContent = formatNumber(data.conversions[this.value]);
+                };
+                
+                for (const [unit, value] of Object.entries(data.conversions)) {
+                    const option = document.createElement('option');
+                    option.value = unit;
+                    option.textContent = unit;
+                    if (unit === data.unit) option.selected = true;
+                    select.appendChild(option);
+                }
+                
+                valueDiv.appendChild(select);
+            } else {
+                const unitSpan = document.createElement('span');
+                unitSpan.style.fontSize = '1rem';
+                unitSpan.style.fontWeight = '500';
+                unitSpan.textContent = data.unit;
+                valueDiv.appendChild(unitSpan);
+            }
+            
+            // Add phase indicator if available
+            if (data.phase) {
+                const phaseSpan = document.createElement('span');
+                const phaseMap = {'g': '기체', 'l': '액체', 's': '고체'};
+                const phaseText = phaseMap[data.phase] || data.phase;
+                phaseSpan.className = `phase-indicator phase-${data.phase === 'g' ? 'gas' : data.phase === 'l' ? 'liquid' : 'solid'}`;
+                phaseSpan.textContent = phaseText;
+                valueDiv.appendChild(phaseSpan);
+            }
+            
+            body.appendChild(valueDiv);
+            
+            // Property details
+            const details = document.createElement('div');
+            details.className = 'property-details';
+            
+            // Temperature
+            const tempDetail = createDetailItem('온도', 
+                `${data.temperature_K.toFixed(2)} K (${data.temperature_C.toFixed(2)}°C)`);
+            details.appendChild(tempDetail);
+            
+            // Pressure
+            const pressDetail = createDetailItem('압력', 
+                `${(data.pressure_Pa/1000).toFixed(1)} kPa (${(data.pressure_Pa/101325).toFixed(3)} atm)`);
+            details.appendChild(pressDetail);
+            
+            // CAS Number
+            if (data.cas_number) {
+                const casDetail = createDetailItem('CAS 등록번호', data.cas_number);
+                details.appendChild(casDetail);
+            }
+            
+            // Molecular Weight
+            if (data.molecular_weight) {
+                const mwDetail = createDetailItem('분자량', 
+                    `${data.molecular_weight.toFixed(4)} ${data.molecular_weight_unit}`);
+                details.appendChild(mwDetail);
+            }
+            
+            body.appendChild(details);
+            
+            // Data sources with expandable details
+            if (data.data_sources) {
+                const sourcesDiv = document.createElement('div');
+                sourcesDiv.className = 'data-sources';
+                
+                const sourceTitle = document.createElement('div');
+                sourceTitle.className = 'source-title';
+                sourceTitle.innerHTML = '데이터 출처 <span class="source-badge">검증됨</span>';
+                sourcesDiv.appendChild(sourceTitle);
+                
+                const sourceList = document.createElement('ul');
+                sourceList.className = 'source-list';
+                
+                data.data_sources.forEach(source => {
+                    const li = document.createElement('li');
+                    li.textContent = source;
+                    sourceList.appendChild(li);
+                });
+                
+                sourcesDiv.appendChild(sourceList);
+                
+                // Add expandable detailed information section
+                if (data.calculation_details || data.nist_webbook_url) {
+                    const detailsToggle = document.createElement('button');
+                    detailsToggle.className = 'details-toggle';
+                    detailsToggle.innerHTML = '<span class="toggle-icon">▶</span> 상세 계산 정보';
+                    detailsToggle.onclick = function() {
+                        const content = this.nextElementSibling;
+                        const icon = this.querySelector('.toggle-icon');
+                        if (content.style.display === 'block') {
+                            content.style.display = 'none';
+                            icon.textContent = '▶';
+                        } else {
+                            content.style.display = 'block';
+                            icon.textContent = '▼';
+                        }
+                    };
+                    sourcesDiv.appendChild(detailsToggle);
+                    
+                    const detailsContent = document.createElement('div');
+                    detailsContent.className = 'calculation-details';
+                    detailsContent.style.display = 'none';
+                    
+                    if (data.calculation_details) {
+                        const calcDetails = data.calculation_details;
+                        
+                        // Method and equation
+                        if (calcDetails.method) {
+                            const methodDiv = document.createElement('div');
+                            methodDiv.className = 'detail-section';
+                            methodDiv.innerHTML = `<strong>계산 방법:</strong> ${calcDetails.method}`;
+                            detailsContent.appendChild(methodDiv);
+                        }
+                        
+                        if (calcDetails.equation) {
+                            const eqDiv = document.createElement('div');
+                            eqDiv.className = 'detail-section equation';
+                            eqDiv.innerHTML = `<strong>사용 방정식:</strong><br><code>${calcDetails.equation}</code>`;
+                            detailsContent.appendChild(eqDiv);
+                        }
+                        
+                        // Validity range
+                        if (calcDetails.validity_range) {
+                            const vr = calcDetails.validity_range;
+                            const rangeDiv = document.createElement('div');
+                            rangeDiv.className = 'detail-section';
+                            const tMinC = vr.T_min - 273.15;
+                            const tMaxC = vr.T_max - 273.15;
+                            rangeDiv.innerHTML = `<strong>유효 온도 범위:</strong> ${vr.T_min.toFixed(1)} - ${vr.T_max.toFixed(1)} K (${tMinC.toFixed(1)} - ${tMaxC.toFixed(1)}°C)`;
+                            detailsContent.appendChild(rangeDiv);
+                        }
+                        
+                        // Uncertainty
+                        if (calcDetails.uncertainty) {
+                            const uncDiv = document.createElement('div');
+                            uncDiv.className = 'detail-section';
+                            uncDiv.innerHTML = `<strong>측정 불확도:</strong> ${calcDetails.uncertainty}`;
+                            detailsContent.appendChild(uncDiv);
+                        }
+                    }
+                    
+                    // NIST WebBook link
+                    if (data.nist_webbook_url) {
+                        const linkDiv = document.createElement('div');
+                        linkDiv.className = 'detail-section nist-link';
+                        linkDiv.innerHTML = `<a href="${data.nist_webbook_url}" target="_blank" rel="noopener noreferrer">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                <polyline points="15 3 21 3 21 9"></polyline>
+                                <line x1="10" y1="14" x2="21" y2="3"></line>
+                            </svg>
+                            NIST WebBook에서 확인
+                        </a>`;
+                        detailsContent.appendChild(linkDiv);
+                    }
+                    
+                    sourcesDiv.appendChild(detailsContent);
+                }
+                
+                body.appendChild(sourcesDiv);
+            }
+            
+            resultCard.appendChild(body);
+            contentDiv.appendChild(resultCard);
+            messageDiv.appendChild(contentDiv);
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function createDetailItem(label, value) {
+            const item = document.createElement('div');
+            item.className = 'detail-item';
+            
+            const labelDiv = document.createElement('div');
+            labelDiv.className = 'detail-label';
+            labelDiv.textContent = label;
+            
+            const valueDiv = document.createElement('div');
+            valueDiv.className = 'detail-value';
+            valueDiv.textContent = value;
+            
+            item.appendChild(labelDiv);
+            item.appendChild(valueDiv);
+            
+            return item;
+        }
+
+        function formatNumber(num) {
+            if (typeof num !== 'number') return num;
+            if (num > 1000 || num < 0.001) {
+                return num.toExponential(4);
+            }
+            return num.toFixed(4);
+        }
+
+        function showLoading() {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message assistant-message';
+            messageDiv.id = 'loading-' + Date.now();
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.innerHTML = '<span class="loading"></span><span class="loading"></span><span class="loading"></span>';
+            
+            messageDiv.appendChild(contentDiv);
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            return messageDiv.id;
+        }
+
+        function removeLoading(loadingId) {
+            const loadingDiv = document.getElementById(loadingId);
+            if (loadingDiv) {
+                loadingDiv.remove();
+            }
+        }
+
+        function setExample(text) {
+            userInput.value = text;
+            userInput.style.height = 'auto';
+            userInput.style.height = userInput.scrollHeight + 'px';
+            userInput.focus();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+#!/bin/bash
+export OPENAI_API_KEY="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"
+cd /home/danny/thermoengine-web
+node backend/server-openai.js
